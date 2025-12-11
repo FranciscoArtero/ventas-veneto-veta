@@ -384,7 +384,7 @@ def registrar_venta(venta: Venta, items: List[VentaItem]):
              """, (venta_inserted_id, item.producto_id, item.cantidad, item.precio_unitario, item.subtotal, venta.marca))
         
         conn.commit()
-        return True
+        return venta_inserted_id
 
     except Exception as e:
         conn.rollback()

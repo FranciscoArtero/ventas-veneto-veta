@@ -24,9 +24,27 @@ def render_clientes_page():
     if 'new_cli_razon' not in st.session_state: st.session_state.new_cli_razon = ""
     if 'new_cli_cuit' not in st.session_state: st.session_state.new_cli_cuit = ""
 
-    def clear_cli_form():
-        st.session_state.new_cli_razon = ""
-        st.session_state.new_cli_cuit = ""
+    # --- CALLBACKS ---
+    def submit_new_client():
+        # Access bound variables from state
+        new_razon = st.session_state.new_cli_razon
+        new_cuit = st.session_state.new_cli_cuit
+        
+        if not new_razon:
+            st.session_state.cli_msg = ("error", "Razón Social es obligatoria.")
+            return
+
+        try:
+            cliente = Cliente(id=0, razon_social=new_razon, cuit_cuil=new_cuit, marca=marca)
+            crear_cliente(cliente)
+            st.session_state.cli_msg = ("success", f"Cliente creado en {marca}!")
+            
+            # Safe to clear/reset state here
+            st.session_state.new_cli_razon = ""
+            st.session_state.new_cli_cuit = ""
+            st.session_state.show_client_form = False
+        except Exception as e:
+             st.session_state.cli_msg = ("error", f"Error: {e}")
 
     # --- 1. TOOLBAR ---
     col_tools, _ = st.columns([1, 4])
@@ -34,28 +52,21 @@ def render_clientes_page():
         st.session_state.show_client_form = not st.session_state.show_client_form
 
     # --- 2. CREATE FORM ---
+    if 'cli_msg' in st.session_state:
+        dtype, msg = st.session_state.pop('cli_msg')
+        if dtype == 'error': st.error(msg)
+        elif dtype == 'success': st.success(msg)
+
     if st.session_state.show_client_form:
         with st.container():
             st.markdown(f"### ✨ Alta de Cliente en {marca}")
             with st.form("create_client_form", clear_on_submit=False):
                 c1, c2 = st.columns(2)
                 # Use keys
-                new_razon = c1.text_input("Razón Social", key="new_cli_razon")
-                new_cuit = c2.text_input("CUIT / CUIL (Opcional)", key="new_cli_cuit")
+                st.text_input("Razón Social", key="new_cli_razon")
+                st.text_input("CUIT / CUIL (Opcional)", key="new_cli_cuit")
                 
-                if st.form_submit_button("Guardar Cliente"):
-                    try:
-                        if not new_razon:
-                            st.error("Razón Social es obligatoria.")
-                        else:
-                            cliente = Cliente(id=0, razon_social=new_razon, cuit_cuil=new_cuit, marca=marca)
-                            crear_cliente(cliente)
-                            st.success(f"Cliente creado en {marca}!")
-                            clear_cli_form()
-                            st.session_state.show_client_form = False
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"Error: {e}")
+                st.form_submit_button("Guardar Cliente", on_click=submit_new_client)
             st.divider()
 
     # --- 3. LIST & ACTIONS ---
