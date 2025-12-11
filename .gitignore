@@ -1,0 +1,12 @@
+# Archivos de Streamlit y Entorno
+.streamlit/secrets.toml  # <--- ¡Clave de seguridad!
+.venv/
+__pycache__/
+
+# Base de datos local (ya no la necesitamos)
+ventas_veta.db
+
+# Archivos de depuración y temporales
+*.pyc
+debug_st.py
+test_import.py
