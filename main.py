@@ -5,7 +5,7 @@ from src.ui.products import render_products_page
 from src.ui.ventas import render_ventas_page
 
 # 1. Config Global
-st.set_page_config(page_title="VENTAS VETA", page_icon="📦", layout="wide")
+st.set_page_config(page_title="VETA / VENETO", page_icon="assets/nuevo_logo_veta.png", layout="wide")
 
 # CSS Injection for Branding (Grayscale Theme)
 st.markdown("""
@@ -125,7 +125,7 @@ st.markdown("""
     .stApp > header {
         display: none;
     }
-    
+
 </style>
 """, unsafe_allow_html=True)
 
