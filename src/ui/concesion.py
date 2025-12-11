@@ -35,34 +35,48 @@ def render_concesion_page():
         if 'new_socio_contact' not in st.session_state: st.session_state.new_socio_contact = ""
         if 'editing_socio_id' not in st.session_state: st.session_state.editing_socio_id = None
 
-        # Helper to clear form
-        def clear_socio_form():
-            st.session_state.new_socio_name = ""
-            st.session_state.new_socio_cuit = ""
-            st.session_state.new_socio_contact = ""
+        # Helper Callback for Form Submission
+        def submit_new_socio():
+             # Access values directly from state since they are bound
+             name = st.session_state.new_socio_name
+             cuit = st.session_state.new_socio_cuit
+             contact = st.session_state.new_socio_contact
+             
+             if not name:
+                 st.session_state.form_msg = ("warning", "El nombre es obligatorio.")
+                 return
+
+             try:
+                 crear_concesionario(name, cuit, contact, marca)
+                 st.session_state.form_msg = ("success", "Socio creado exitosamente.")
+                 # Safe to clear here as it runs before widget instantiation in the next Rerun (effectively) 
+                 # or before re-render if using callback
+                 st.session_state.new_socio_name = ""
+                 st.session_state.new_socio_cuit = ""
+                 st.session_state.new_socio_contact = ""
+             except Exception as e:
+                 st.session_state.form_msg = ("error", str(e))
 
         # List Existing
         socios = get_concesionarios(marca)
         
         with st.expander("➕ Nuevo Socio", expanded=False):
-            with st.form("new_socio_form", clear_on_submit=False): # We handle clear manually to match requirement
+            with st.form("new_socio_form", clear_on_submit=False): 
                 c1, c2 = st.columns(2)
-                name_val = c1.text_input("Nombre / Razón Social", key="new_socio_name")
-                cuit_val = c2.text_input("CUIT / CUIL", key="new_socio_cuit")
-                cont_val = st.text_input("Contacto", key="new_socio_contact")
+                # Widgets bind to keys
+                st.text_input("Nombre / Razón Social", key="new_socio_name")
+                st.text_input("CUIT / CUIL", key="new_socio_cuit")
+                st.text_input("Contacto", key="new_socio_contact")
                 
-                submitted = st.form_submit_button("Crear Socio")
-                if submitted:
-                    if name_val:
-                        try:
-                            crear_concesionario(name_val, cuit_val, cont_val, marca)
-                            st.success("Socio creado exitosamente.")
-                            clear_socio_form()
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error: {e}")
-                    else:
-                        st.warning("El nombre es obligatorio.")
+                # Submit with Callback
+                st.form_submit_button("Crear Socio", on_click=submit_new_socio)
+        
+        # Display Messages from Callback if any
+        if 'form_msg' in st.session_state:
+            dtype, msg = st.session_state.pop('form_msg')
+            if dtype == 'success': st.success(msg)
+            elif dtype == 'warning': st.warning(msg)
+            elif dtype == 'error': st.error(msg)
 
         if socios:
             st.divider()
