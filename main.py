@@ -67,6 +67,48 @@ st.markdown("""
         color: #262730 !important;
     }
 
+    /* --- MOBILE OPTIMIZATION --- */
+    @media (max-width: 640px) {
+        /* Reduce padding at the top of the main container */
+        .block-container {
+            padding-top: 2rem !important;
+            padding-bottom: 3rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        
+        /* Reduce Header sizes for mobile */
+        h1 {
+            font-size: 1.6rem !important;
+        }
+        h2 {
+            font-size: 1.3rem !important;
+        }
+        h3 {
+            font-size: 1.1rem !important;
+        }
+        
+        /* Adjust global font size if needed */
+        p, div, label, span {
+            font-size: 0.95rem !important;
+        }
+        
+        /* Improve contrast and spacing for inputs on mobile */
+        .stTextInput input, .stNumberInput input, .stSelectbox div {
+             min-height: 45px !important;
+        }
+    }
+
+    /* Refined Shadows and Contrast for Grayscale Theme */
+    .stApp {
+        background-color: #F8F9FA !important; /* Slightly brighter than F4F4F4 for better contrast */
+    }
+    
+    /* Card-like effect for containers if users use them, or metric cards */
+    [data-testid="stMetricValue"] {
+        color: #2C2C2C !important;
+    }
+    
 </style>
 """, unsafe_allow_html=True)
 
@@ -77,13 +119,12 @@ init_db()
 # 3. Sidebar Navigation
 # Logo Injection
 try:
-    st.sidebar.image("assets/VETA_Wall_Panels_Logo.png", use_container_width=True)
+    st.sidebar.image("assets/nuevo_logo_veta.png", use_container_width=True)
 except:
-    st.sidebar.warning("Logo not found at assets/VETA_Wall_Panels_Logo.png")
+    st.sidebar.warning("Logo not found at assets/nuevo_logo_veta.png")
 
 # --- 2.1 CLEAN SIDEBAR ---
-# Removed Global Brand Selector as per new requirements (Page-Level Control)
-# Keeping only Navigation
+# Navigate Logic
 
 page = st.sidebar.radio(
     "Navegación",
@@ -91,12 +132,51 @@ page = st.sidebar.radio(
     index=0
 )
 
+# --- 3.1 MOBILE SIDEBAR AUTO-CLOSE LOGIC ---
+import streamlit.components.v1 as components
+# Inject JS to detect click on sidebar radio inputs and close sidebar if on mobile
+components.html("""
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function addMobileHandler() {
+            const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
+            if (!sidebar) return;
+            
+            // Find all radio options in the sidebar
+            // Note: Targeting the labels usually works best as they capture the click
+            const radioLabels = window.parent.document.querySelectorAll('[data-testid="stSidebar"] [data-testid="stRadio"] label');
+            
+            radioLabels.forEach(label => {
+                label.addEventListener('click', function() {
+                    // Check if mobile (width < 640px)
+                    if (window.parent.innerWidth <= 640) {
+                        // Find the close button (often X or chevron in sidebar)
+                        // Streamlit's sidebar close btn usually has specific aria-label or testid
+                        const closeBtn = window.parent.document.querySelector('[data-testid="stSidebar"] button');
+                        if (closeBtn) {
+                            setTimeout(() => {
+                                closeBtn.click();
+                            }, 150); // Short delay to ensure selection registers
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Attempt to attach on load and after small delay to ensure elements render
+        addMobileHandler();
+        setTimeout(addMobileHandler, 500);
+        setTimeout(addMobileHandler, 1000);
+    });
+</script>
+""", height=0, width=0)
+
 # NEW: Reset Button
 from src.ui.state_manager import render_brand_reset_button_sidebar
 render_brand_reset_button_sidebar()
 
 st.sidebar.divider()
-st.sidebar.caption("v2.4 - Consignment Module")
+st.sidebar.caption("v2.5 - Mobile Optimized")
 
 from src.ui.clientes import render_clientes_page
 from src.ui.facturacion import render_facturacion_page
