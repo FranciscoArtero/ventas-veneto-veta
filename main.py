@@ -108,6 +108,23 @@ st.markdown("""
     [data-testid="stMetricValue"] {
         color: #2C2C2C !important;
     }
+
+    /* --- HIDE STREAMLIT UI (Developer Options) --- */
+    /* Ocultar el menú superior (Github, Share, 3 Puntos, etc.) */
+    menu button[data-testid="stActionButtonIcon"], 
+    header {
+        visibility: hidden;
+    }
+
+    /* Ocultar el pie de página (Made with Streamlit/logos) */
+    footer {
+        visibility: hidden;
+    }
+
+    /* Asegurar que el contenido no se rompa */
+    .stApp > header {
+        display: none;
+    }
     
 </style>
 """, unsafe_allow_html=True)
